@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ごみナビ 石山・南郷｜大津市</title>
+<meta name="description" content="大津市 石山・南郷（千町・平津・南郷・石山寺・大平など）のごみ収集日と分別がすぐわかるアプリ">
+<meta name="theme-color" content="#2f855a">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ごみナビ">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f5f2;
+  --surface:#ffffff;
+  --ink:#1c2621;
+  --ink-2:#56635c;
+  --line:#d8dfd9;
+  --brand:#2f855a;
+  --focus:#1d4ed8;
+  --c-burn:#c43b2f;
+  --c-non:#2a5ea6;
+  --c-plastic:#2f8a52;
+  --c-bottle:#a86a00;
+  --c-can:#7546b8;
+  --c-pet:#c23f78;
+  --c-paper:#7a5c2e;
+  --c-none:#9aa59f;
+  --c-out:#4d6270;
+  --radius-l:20px;
+  --radius-s:12px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#141a17;
+    --surface:#1d2521;
+    --ink:#e7ede9;
+    --ink-2:#a4b1aa;
+    --line:#33403a;
+    --brand:#5cc28a;
+    --focus:#8fb4ff;
+    --c-burn:#e0594c;
+    --c-non:#4f87d4;
+    --c-plastic:#46a96b;
+    --c-bottle:#c98a14;
+    --c-can:#9a6fdb;
+    --c-pet:#dc5f95;
+    --c-paper:#c49a5c;
+    --c-none:#5d6a63;
+    --c-out:#8ea3b0;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:12px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"BIZ UDPGothic",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Yu Gothic",sans-serif;
+  font-size:16px;line-height:1.7;
+  -webkit-text-size-adjust:100%;
+}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+a{color:var(--brand)}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px calc(96px + env(safe-area-inset-bottom))}
+@media (min-width:760px){.wrap{padding-bottom:48px}}
+
+/* ヘッダー */
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 2px 14px}
+.top h1{margin:0;font-size:1.05rem;font-weight:700}
+.top h1 span{color:var(--ink-2);font-weight:400;margin-left:.4em}
+.top time{color:var(--ink-2);font-size:.9rem;white-space:nowrap}
+
+/* 判子（スタンプ） */
+.stamp{
+  --c:var(--c-none);
+  display:inline-grid;place-items:center;flex:none;
+  width:2.1em;height:2.1em;border-radius:50%;
+  background:var(--c);color:#fff;font-weight:700;line-height:1;
+  box-shadow:inset 0 0 0 .14em var(--c),inset 0 0 0 .22em rgba(255,255,255,.55);
+}
+.stamp.off{background:transparent;color:var(--c);box-shadow:inset 0 0 0 .12em var(--c)}
+[data-k=burn]{--c:var(--c-burn)}
+[data-k=non]{--c:var(--c-non)}
+[data-k=plastic]{--c:var(--c-plastic)}
+[data-k=bottle]{--c:var(--c-bottle)}
+[data-k=can]{--c:var(--c-can)}
+[data-k=pet]{--c:var(--c-pet)}
+[data-k=paper]{--c:var(--c-paper)}
+[data-k=box],[data-k=kaden],[data-k=pc],[data-k=sodai],[data-k=ret]{--c:var(--c-out)}
+
+/* いちばん上：今日・明日 */
+.hero{
+  background:var(--surface);border-radius:var(--radius-l);
+  border:1px solid var(--line);overflow:hidden;
+}
+.hero-main{display:flex;gap:18px;align-items:center;padding:22px 20px 20px;border-top:8px solid var(--c, var(--c-none))}
+.hero-main .stamp{font-size:2.6rem}
+.hero-when{margin:0;color:var(--ink-2);font-size:.95rem}
+.hero-what{margin:2px 0 4px;font-size:1.75rem;line-height:1.3;font-weight:700;letter-spacing:.01em}
+.hero-also{margin:0;font-size:.95rem}
+.hero-note{margin:8px 0 0;font-size:.88rem;color:var(--ink-2)}
+.hero-sub{display:flex;align-items:center;gap:10px;padding:12px 20px;border-top:1px solid var(--line);font-size:.95rem;background:color-mix(in srgb,var(--surface) 92%,var(--ink))}
+.hero-sub .stamp{font-size:.8rem}
+.hero-sub .done{color:var(--ink-2)}
+@media (max-width:420px){
+  .hero-main{gap:14px;padding:18px 16px}
+  .hero-main .stamp{font-size:2.1rem}
+  .hero-what{font-size:1.45rem}
+}
+
+/* セクション */
+section{margin-top:28px}
+h2{font-size:1.15rem;margin:0 0 10px;padding-left:2px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l)}
+
+/* 次の収集 */
+.next{list-style:none;margin:0;padding:0}
+.next li+li{border-top:1px solid var(--line)}
+.next details summary{
+  display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:12px 16px;cursor:pointer;list-style:none;
+}
+.next summary::-webkit-details-marker{display:none}
+.next .stamp{font-size:.95rem}
+.next .name{font-weight:700;line-height:1.4}
+.next .rule{display:block;font-weight:400;font-size:.85rem;color:var(--ink-2)}
+.next .when{text-align:right;line-height:1.35;white-space:nowrap}
+.next .when b{display:block}
+.next .when small{color:var(--ink-2);font-size:.82rem}
+.next .when .soon{color:var(--c);font-weight:700}
+.next .body{padding:0 16px 14px calc(16px + 2.1em * .95 + 12px);font-size:.93rem}
+.next .body p{margin:0 0 6px}
+.next details[open] summary{padding-bottom:6px}
+
+/* 検索 */
+.searchbox{position:relative}
+.searchbox input{
+  width:100%;padding:14px 16px 14px 46px;font-size:17px;
+  border:2px solid var(--line);border-radius:var(--radius-s);background:var(--surface);
+  -webkit-appearance:none;appearance:none;
+}
+.searchbox input:focus{border-color:var(--brand);outline:none}
+.searchbox svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--ink-2)}
+#sBody{margin-top:10px;display:grid;gap:10px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-size:.9rem;cursor:pointer}
+.chip:hover{border-color:var(--ink-2)}
+.sub{font-size:.9rem;color:var(--ink-2);margin:8px 2px 0;font-weight:700}
+.groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (min-width:600px){.groups{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.gbtn{display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-left:5px solid var(--c);background:var(--surface);border-radius:var(--radius-s);cursor:pointer;line-height:1.35;font-size:.9rem;font-weight:700}
+.gbtn .stamp{font-size:.78rem}
+.gbtn small{display:block;color:var(--ink-2);font-size:.78rem;font-weight:400;margin-top:2px}
+.gbtn:hover,.lrow:hover{border-color:var(--ink-2)}
+.ghead{margin:-4px 0 -6px}
+.back{border:none;background:none;color:var(--brand);padding:6px 2px;cursor:pointer;font-weight:700;font-size:.95rem}
+.gtitle{display:flex;align-items:center;gap:12px;padding:4px 2px}
+.gtitle .stamp{font-size:1.15rem}
+.gtitle h3{margin:0;font-size:1.1rem}
+.gtitle p{margin:0;color:var(--ink-2);font-size:.9rem}
+.gtip{margin:0;font-size:.92rem;padding:0 2px}
+.list{display:grid;gap:6px}
+.lrow{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);text-align:left;cursor:pointer;font-size:.95rem}
+.lrow small{color:var(--ink-2);font-size:.8rem;text-align:right}
+.lrow.strong{border-color:var(--brand);color:var(--brand);font-weight:700}
+.res{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--c, var(--c-none));border-radius:var(--radius-s);padding:12px 14px}
+.res h3{margin:0;font-size:1.05rem}
+.res .cat{margin:2px 0 6px;font-weight:700;color:var(--c, var(--ink-2))}
+.res .day{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 6px;font-size:.95rem}
+.res .day .stamp{font-size:.72rem}
+.res .rule{color:var(--ink-2);font-size:.88rem}
+.res .how{margin:0;font-size:.93rem;color:var(--ink-2)}
+.contact{margin:8px 0 0;font-size:.88rem}
+.hint{background:var(--surface);border:1px dashed var(--line);border-radius:var(--radius-s);padding:12px 14px;font-size:.95rem}
+.hint p{margin:0}
+.hint p+p{margin-top:6px}
+.guide{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-s);padding:12px 14px}
+.guide h3{margin:0 0 4px;font-size:1.05rem}
+.guide .g{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.guide .g .stamp{font-size:.8rem;margin-top:2px}
+.guide .g p{margin:0;font-size:.92rem}
+.guide .g small{color:var(--c);font-weight:700;font-size:.82rem}
+
+/* カレンダー */
+.cal{padding:14px 12px 12px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.cal-head h3{margin:0;font-size:1.1rem;min-width:7.5em}
+.cal-nav{display:flex;gap:6px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;cursor:pointer;font-size:.92rem;min-height:40px}
+.btn:hover{border-color:var(--ink-2)}
+.btn[aria-label]{min-width:40px;padding:7px 10px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:.8rem;color:var(--ink-2);padding:2px 0 4px}
+.dow.sun{color:var(--c-burn)}
+.dow.sat{color:var(--c-non)}
+.cell{
+  min-height:64px;border-radius:10px;border:1px solid transparent;background:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
+  padding:6px 2px;cursor:pointer;
+}
+.cell:hover{border-color:var(--line)}
+.cell .d{font-size:.9rem;line-height:1}
+.cell .stamp{font-size:.82rem}
+.cell .lbl{display:none}
+.cell.today{background:color-mix(in srgb,var(--brand) 14%,transparent)}
+.cell.today .d{font-weight:700}
+.cell.sel{border-color:var(--ink)}
+.cell.blank{visibility:hidden}
+.cell.past{opacity:.45}
+@media (min-width:640px){
+  .cell{min-height:78px;align-items:stretch;padding:6px}
+  .cell .d{text-align:left}
+  .cell .stamp{display:none}
+  .cell .lbl{display:block;font-size:.72rem;line-height:1.3;font-weight:700;color:#fff;background:var(--c);border-radius:6px;padding:3px 5px}
+  .cell .lbl.off{background:transparent;color:var(--c);box-shadow:inset 0 0 0 1.5px var(--c)}
+}
+.daydetail{margin-top:10px;padding:12px 14px;border-radius:var(--radius-s);background:color-mix(in srgb,var(--surface) 90%,var(--ink));font-size:.95rem}
+.daydetail p{margin:0}
+.daydetail .row{display:flex;align-items:center;gap:10px}
+.daydetail .stamp{font-size:.85rem}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:.84rem;color:var(--ink-2)}
+.legend > span{display:inline-flex;align-items:center;gap:6px}
+.legend .stamp{font-size:.62rem}
+
+/* 注意・出典 */
+.notes{padding:14px 16px;font-size:.92rem}
+.notes ul{margin:0;padding-left:1.2em}
+.notes li+li{margin-top:4px}
+.notice{margin-top:14px;padding:12px 14px;border-radius:var(--radius-s);border:2px solid var(--c-bottle);font-size:.93rem}
+.notice[hidden]{display:none}
+footer{margin-top:20px;font-size:.84rem;color:var(--ink-2);padding:0 2px}
+footer p{margin:0 0 6px}
+
+/* スマホ下部ナビ */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  background:color-mix(in srgb,var(--surface) 94%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 9px;color:var(--ink-2);text-decoration:none;font-size:.75rem}
+.tabbar svg{width:22px;height:22px}
+@media (min-width:760px){.tabbar{display:none}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top" id="top">
+    <h1>ごみナビ<span>大津市 石山・南郷</span></h1>
+    <time id="now"></time>
+  </header>
+
+  <main>
+    <div id="hero" class="hero" aria-live="polite"></div>
+    <div id="fyNotice" class="notice" hidden></div>
+
+    <section id="next" aria-labelledby="next-h">
+      <h2 id="next-h">次の収集日</h2>
+      <ul class="next panel" id="nextList"></ul>
+    </section>
+
+
+    <section id="calendar" aria-labelledby="cal-h">
+      <h2 id="cal-h">カレンダー</h2>
+      <div class="panel cal">
+        <div class="cal-head">
+          <h3 id="calTitle"></h3>
+          <div class="cal-nav">
+            <button class="btn" type="button" id="prevM" aria-label="前の月">‹</button>
+            <button class="btn" type="button" id="thisM">今月</button>
+            <button class="btn" type="button" id="nextM" aria-label="次の月">›</button>
+          </div>
+        </div>
+        <div class="grid" id="calGrid"></div>
+        <div class="daydetail" id="dayDetail" aria-live="polite"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="notes-h">
+      <h2 id="notes-h">出すときの注意</h2>
+      <div class="panel notes">
+        <ul>
+          <li>決められたごみ集積所に、<strong>収集日の朝5時から8時30分まで</strong>に出してください。</li>
+          <li>紙ごみ以外は<strong>大津市の指定袋</strong>で出します。紙ごみは指定袋に入れず、ひもで十字にしばります。</li>
+          <li>使い捨てライターは中身を使い切って<strong>燃やせるごみ</strong>、スプレー缶・カセットボンベは穴をあけずに使い切って<strong>かん</strong>の日に。</li>
+          <li>リチウムイオン電池・モバイルバッテリーは、燃やせないごみに入れず、<strong>びんの日に別の指定袋</strong>で（販売店で回収されないものだけ）。</li>
+          <li>乾電池は集積所ではなく、市民センターなどの<strong>回収ボックス</strong>へ。</li>
+          <li>祝日も通常どおり収集します。12月31日・1月1日は収集がありません。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="search" aria-labelledby="search-h">
+      <h2 id="search-h">これは何ごみ？</h2>
+      <div class="searchbox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg>
+        <label for="q" class="sr">品目名で検索</label>
+        <input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="例：電池、お菓子の箱、ドライヤー">
+      </div>
+      <div id="sBody" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>対象：石山寺1～5丁目・大平1～2丁目・石山寺辺町・平津1～2丁目・石山平津町・千町1～4丁目・石山千町・赤尾町・南郷1～6丁目・石山南郷町・石山内畑町・石山外畑町・南郷上山町</p>
+    <p>元資料：大津市「<a href="https://www.city.otsu.lg.jp/soshiki/030/1703/g/c/56912.html" target="_blank" rel="noopener">ごみ収集カレンダー 石山・南郷（令和8年度）</a>」「<a href="https://www.city.otsu.lg.jp/soshiki/030/1703/g/genryo/1510128093633.html" target="_blank" rel="noopener">おおつごみ分別・減量ガイドブック</a>」</p>
+    <p>わからないときは 大津市 廃棄物減量推進課 <a href="tel:0775282802">077-528-2802</a>／大型ごみの申し込みは ごみコールセンター <a href="tel:0775282761">077-528-2761</a></p>
+    <p>個人がつくった非公式のアプリです。最新の情報は市の資料で確かめてください。</p>
+  </footer>
+</div>
+
+<nav class="tabbar" aria-label="ページ内の移動">
+  <a href="#top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-6h4v6"/></svg>今日</a>
+  <a href="#calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>カレンダー</a>
+  <a href="#search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg>さがす</a>
+</nav>
+
+<script>
+"use strict";
+
+/* ============================================================
+   収集ルール（大津市 石山・南郷）
+   元資料：大津市「ごみ収集カレンダー 石山、南郷」令和8年4月～令和9年3月
+   dow: 曜日（0=日 … 6=土）  nth: 何回目のその曜日か（省略＝毎週）
+   祝日も通常どおり収集。5回目の月曜・水曜は収集なし。
+   ============================================================ */
+const COL = {
+  burn:    { name:"燃やせるごみ", cal:"燃やせる", mark:"燃", dow:[2,5], rule:"毎週 火・金",
+             also:"生ごみ・衣類・汚れたプラ・ライターなど",
+             examples:"生ごみ、紙くず、衣類・布、汚れの落ちないプラ容器、CD・DVD、プラのおもちゃ、歯ブラシ、使い捨てライターなど",
+             tip:"生ごみは水気をよく切ります。ライターは中身を使い切ってから。長さ40cm以上・重さ5kg以上のものは大型ごみです。" },
+  plastic: { name:"プラスチック製容器包装", cal:"プラ", mark:"プ", dow:[4], rule:"毎週 木",
+             also:"プラマークのある、汚れていない容器・包装だけ",
+             examples:"お菓子やパンの袋、レジ袋、キャップ・ふた、ラベル、卵パック、カップ麺容器、洗剤・シャンプーのボトルなど",
+             tip:"中身を空にして軽くすすぎます。汚れやにおいが取れないものは燃やせるごみ。指定袋に直接入れます（袋の二重はなし）。" },
+  paper:   { name:"紙ごみ", cal:"紙ごみ", mark:"紙", dow:[3], nth:[2,4], rule:"第2・4 水曜",
+             also:"指定袋に入れず、種類ごとにひもで十字にしばって",
+             examples:"新聞（チラシ含む）、雑誌、お菓子やティッシュの箱、ノート、封筒、はがき、牛乳パック、ダンボールなど",
+             tip:"新聞／雑誌・雑がみ／ダンボールの3つに分け、少しでもひもで十字にしばります。ビニール袋や指定袋には入れません。雨の日も出せます。" },
+  non:     { name:"燃やせないごみ", cal:"燃やせない", mark:"不", dow:[3], nth:[1], rule:"第1 水曜",
+             also:"陶器・ガラス・小型家電・金属・電球など",
+             examples:"茶わん・皿、コップ・化粧品のびん・鏡、ドライヤー・トースターなどの小型家電、フライパン・鍋、アルミホイル、電球・蛍光管、傘、包丁など",
+             tip:"割れ物や刃物は紙に包み「キケン」と書きます。家電の電池は必ず外します。指定袋に入らないもの・5kg以上は大型ごみです。" },
+  can:     { name:"かん", cal:"かん", mark:"缶", dow:[1], nth:[1,3], rule:"第1・3 月曜",
+             also:"スプレー缶・カセットボンベも（穴をあけずに使い切って）",
+             examples:"飲み物の缶、缶詰、お菓子の缶、粉ミルクの缶、スプレー缶、カセットボンベ",
+             tip:"中身を空にしてすすぎます。スプレー缶・カセットボンベは穴をあけず、中身を使い切ってから。" },
+  pet:     { name:"ペットボトル", cal:"ペット", mark:"ペ", dow:[1], nth:[2,4], rule:"第2・4 月曜",
+             also:"キャップとラベルは外してプラの日へ",
+             examples:"飲み物のペットボトル、しょうゆ・みりんなどのペットボトル",
+             tip:"リサイクルマーク「1」のものだけ。キャップとラベルを外し、すすいでつぶします。" },
+  bottle:  { name:"びん", cal:"びん・電池", mark:"び", dow:[3], nth:[3], rule:"第3 水曜（月1回）",
+             also:"リチウムイオン電池もこの日（びんとは別の指定袋で）",
+             examples:"飲み物・食品・調味料のびん（色分けは不要）、リチウムイオン電池・モバイルバッテリー",
+             tip:"キャップを外してすすぎます。化粧品のびん・哺乳びん・耐熱ガラスは燃やせないごみ。リチウムイオン電池は販売店で回収されないものだけ、びんとは別の指定袋に入れます。" },
+};
+const ORDER = ["burn","plastic","paper","non","can","pet","bottle"];
+
+/* 通常と違う日（"YYYY-MM-DD"）
+   off   : 収集なし（市のカレンダーに記載） */
+const EXCEPTIONS = {
+  "2026-12-31": { type:"off", note:"年末のため収集はありません" },
+  "2027-01-01": { type:"off", note:"年始のため収集はありません" },
+};
+/* この日程表が有効な期間（令和8年度） */
+const FY_END = "2027-03-31";
+const CUTOFF = { h:8, m:30 };
+const CONTACT = { name:"大津市 廃棄物減量推進課", tel:"077-528-2802" };
+const CALLCENTER = { name:"ごみコールセンター", tel:"077-528-2761" };
+
+/* ごみ集積所に出せないものの行き先 */
+const PLACES = {
+  box:   { name:"回収ボックス・販売店へ", mark:"箱", contact:true,
+           lead:"ごみ集積所には出せません。" },
+  kaden: { name:"家電リサイクル", mark:"家", contact:true,
+           lead:"市の定期収集には出せません。家電リサイクル法にそって処分します（リサイクル料金が必要）。" },
+  pc:    { name:"パソコン回収", mark:"P", contact:true,
+           lead:"市では処理しません。" },
+  sodai: { name:"大型ごみ", mark:"大", contact:true,
+           lead:"ごみ集積所には出せません。ごみコールセンター（077-528-2761）かホームページで申し込む有料の戸別収集です。" },
+  ret:   { name:"市では収集できません", mark:"×", contact:false, lead:"" },
+};
+
+/* ============================================================
+   品目データ（大津市「おおつごみ分別・減量ガイドブック」より）
+   to   : 出す区分（COLのキー）。複数の日に出せるものは複数。
+   place: 集積所に出せないものの行き先（PLACESのキー）
+   kw   : 検索で引っかけたい呼び方（ひらがな・カタカナは区別しない）
+   ============================================================ */
+const ITEMS = [
+  /* 燃やせるごみ */
+  { name:"生ごみ", cat:"燃やせるごみ", to:["burn"], how:"水気をよく切って指定袋へ。", kw:["台所ごみ","食べ残し","残飯","野菜くず","茶がら","コーヒーかす","果物の皮"] },
+  { name:"紙くず・汚れた紙", cat:"燃やせるごみ", to:["burn"], how:"ティッシュ、紙コップ、レシート（感熱紙）、写真、汚れた紙は資源にならないので燃やせるごみ。", kw:["紙くず","ティッシュ","ちり紙","汚れた紙","紙コップ","レシート","感熱紙","写真","和紙","シュレッダー"] },
+  { name:"紙おむつ", cat:"燃やせるごみ", to:["burn"], how:"汚物はトイレに流してから指定袋へ。", kw:["おむつ","オムツ","生理用品"] },
+  { name:"衣類・布", cat:"燃やせるごみ", to:["burn"], how:"指定袋に入れて燃やせるごみ。まだ着られる服は地域の集団資源回収へ。", kw:["服","洋服","古着","シャツ","ズボン","セーター","タオル","布","下着","靴下","まくら","枕","カーテン"] },
+  { name:"靴・かばん", cat:"燃やせるごみ", to:["burn"], how:"ゴム・革製品として燃やせるごみ。", kw:["靴","くつ","スニーカー","長靴","かばん","カバン","バッグ","ベルト","ゴム手袋"] },
+  { name:"木の枝・板・草", cat:"燃やせるごみ", to:["burn"], how:"長さ40cm未満・太さ5cm未満に切って指定袋へ。", kw:["枝","木","板","木くず","割りばし","草","落ち葉","剪定"] },
+  { name:"使い捨てライター", cat:"燃やせるごみ", to:["burn"], how:"中身が残っていないことを確かめてから燃やせるごみへ。燃やせないごみには入れない。", kw:["ライター","チャッカマン"] },
+  { name:"CD・DVD・ビデオテープ", cat:"燃やせるごみ", to:["burn"], how:"ケースごと燃やせるごみ。", kw:["CD","DVD","ブルーレイ","ディスク","CDケース","ビデオテープ","カセットテープ"] },
+  { name:"歯ブラシ", cat:"燃やせるごみ", to:["burn"], how:"プラスチック製品そのものは燃やせるごみ（プラの日ではない）。", kw:[] },
+  { name:"プラスチック製品", cat:"燃やせるごみ", to:["burn"], how:"おもちゃ・ハンガー・バケツ・洗面器・ストロー・収納ケース・メガネケースなど、容器包装ではないプラは燃やせるごみ。おもちゃの電池は外す。", kw:["おもちゃ","ハンガー","バケツ","洗面器","ストロー","収納ケース","メガネケース","プランター","植木鉢（プラ）","ボールペン","文房具","定規"] },
+  { name:"汚れの落ちないプラ容器", cat:"燃やせるごみ", to:["burn"], how:"納豆の容器、レトルトパウチ、わさび等のチューブ、ソースのボトルなど、汚れやにおいが落ちないものは燃やせるごみ。", kw:["納豆の容器","納豆","レトルト","チューブ","わさび","からし","マヨネーズ","ソース","汚れたプラ"] },
+  { name:"食品トレー", cat:"スーパーの回収 または 燃やせるごみ", to:["burn"], how:"プラの日には出せない。きれいなトレーはスーパーの回収ボックスへ。それ以外は燃やせるごみ。", kw:["トレー","肉のトレー","惣菜トレー","発泡トレー"] },
+  { name:"発泡スチロール・緩衝材", cat:"燃やせるごみ", to:["burn"], how:"発泡スチロールの箱や梱包材、プチプチは燃やせるごみ。大きいものは割って指定袋に入れる。", kw:["発泡スチロール","プチプチ","緩衝材","梱包材","保冷箱"] },
+  { name:"ラップ・コンビニのスプーン", cat:"燃やせるごみ", to:["burn"], how:"使ったラップ、使い捨てのスプーン・フォーク、クリーニングの袋は燃やせるごみ。", kw:["ラップ","使い捨てスプーン","プラスプーン","割りばし","クリーニングの袋"] },
+  { name:"カイロ・湿布・保冷剤", cat:"燃やせるごみ", to:["burn"], how:"使い捨てカイロ、湿布、保冷剤、乾燥剤は燃やせるごみ。", kw:["カイロ","湿布","保冷剤","乾燥剤","シリカゲル"] },
+  { name:"食用油", cat:"燃やせるごみ", to:["burn"], how:"布や紙にしみこませるか、固めてから指定袋へ。液体のまま出さない。", kw:["油","天ぷら油","てんぷら油","サラダ油"] },
+
+  /* 燃やせないごみ */
+  { name:"茶わん・皿・植木鉢", cat:"燃やせないごみ（陶磁器）", to:["non"], how:"割れたものは紙に包み「キケン」と書く。", kw:["茶碗","茶わん","皿","陶器","せともの","瀬戸物","花びん","土鍋","植木鉢"] },
+  { name:"ガラス製品", cat:"燃やせないごみ", to:["non"], how:"コップ、耐熱ガラス、化粧品のびん、哺乳びん、鏡、板ガラスなど。割れたものは紙に包み「キケン」と書く。", kw:["ガラス","コップ","グラス","耐熱ガラス","化粧品のびん","哺乳びん","鏡","板ガラス","割れたガラス"] },
+  { name:"小型家電", cat:"燃やせないごみ", to:["non"], how:"電池は必ず外す。指定袋に入って5kg未満のもの。コードは束ねてほどけないように。", kw:["家電","ドライヤー","アイロン","トースター","ミキサー","電気ポット","電気ケトル","電話機","浄水器","炊飯器","扇風機","ラジオ","時計","リモコン","延長コード","コード"] },
+  { name:"フライパン・鍋・やかん", cat:"燃やせないごみ（小型金属）", to:["non"], how:"金属類として燃やせないごみ。", kw:["フライパン","鍋","なべ","やかん","蒸し器","ボウル","金属","金物"] },
+  { name:"アルミホイル・金属ハンガー", cat:"燃やせないごみ（小型金属）", to:["non"], how:"金属類として燃やせないごみ。", kw:["アルミホイル","ホイル","針金ハンガー","金属ハンガー","スプーン","フォーク","はさみ"] },
+  { name:"電球・蛍光管", cat:"燃やせないごみ", to:["non"], how:"割れないように紙などで包む。", kw:["電球","蛍光管","蛍光灯","LED電球"] },
+  { name:"傘", cat:"燃やせないごみ", to:["non"], how:"指定袋に入らない長さのものは大型ごみ。", kw:["かさ","雨傘","日傘"] },
+  { name:"包丁・刃物", cat:"燃やせないごみ", to:["non"], how:"紙に包み「キケン」と書いて出す。", kw:["包丁","ナイフ","刃物","カッター","カミソリ"] },
+  { name:"びんの金属キャップ", cat:"燃やせないごみ", to:["non"], how:"金属のふたは燃やせないごみ。プラマークのキャップはプラの日。", kw:["王冠","金属のふた","金属キャップ","びんのふた"] },
+  { name:"コイン電池（CR・BR）", cat:"燃やせないごみ", to:["non"], how:"型番が CR・BR で始まるコイン電池は、テープを貼って絶縁してから燃やせないごみ。SR・PR・LR で始まるボタン電池は販売店の回収箱へ。", kw:["コイン電池","CR2032","CR2025","ボタン電池"] },
+  { name:"コンクリート・ブロック片", cat:"燃やせないごみ", to:["non"], how:"こぶし大くらいに割ってから出す。", kw:["コンクリート","ブロック","レンガ"] },
+
+  /* 紙ごみ */
+  { name:"新聞・チラシ", cat:"紙ごみ（新聞）", to:["paper"], how:"指定袋に入れず、新聞だけをひもで十字にしばる。地域の集団資源回収があればそちらへ。", kw:["新聞","新聞紙","チラシ","広告","折り込み"] },
+  { name:"雑誌・雑がみ", cat:"紙ごみ（雑誌・雑がみ）", to:["paper"], how:"雑誌といっしょにひもで十字にしばる。小さい紙は雑誌にはさむか紙袋に入れてからしばる。", kw:["雑誌","雑紙","雑がみ","本","ノート","メモ","包装紙","はがき","手紙","封筒","コピー用紙","カタログ","紙袋","トイレットペーパーの芯"] },
+  { name:"お菓子の箱・ティッシュの箱", cat:"紙ごみ（雑がみ）", to:["paper"], how:"たたんで雑誌・雑がみといっしょにしばる。ビニールの取り出し口は外して燃やせるごみへ。", kw:["お菓子の箱","菓子箱","ティッシュの箱","ティッシュ箱","紙箱","箱","じゃがりこの箱","ポッキーの箱"] },
+  { name:"ダンボール", cat:"紙ごみ（ダンボール）", to:["paper"], how:"たたんでダンボールだけをひもで十字にしばる。送り状やテープははがす。", kw:["段ボール","通販の箱","宅配の箱"] },
+  { name:"牛乳パック", cat:"紙ごみ（雑がみ）", to:["paper"], how:"洗って開いて乾かし、紙ごみの日に。市民センター等の回収ボックスにも出せる。内側がアルミのもの・飲み口がプラのものは燃やせるごみ。", kw:["紙パック","ミルクパック","ジュースのパック"] },
+
+  /* プラスチック製容器包装 */
+  { name:"お菓子・パンの袋", cat:"プラスチック製容器包装", to:["plastic"], how:"プラマークを確かめ、中身を出して指定袋へ。", kw:["お菓子の袋","スナックの袋","パンの袋","袋","ビニール袋","インスタント食品の袋","詰め替えパック","詰め替え用袋"] },
+  { name:"レジ袋", cat:"プラスチック製容器包装", to:["plastic"], how:"プラマークのある袋として出す。", kw:["レジ袋","買い物袋"] },
+  { name:"キャップ・ふた", cat:"プラスチック製容器包装", to:["plastic"], how:"ペットボトルのキャップやプラのふた。", kw:["キャップ","ペットボトルのキャップ","ふた","プラのふた"] },
+  { name:"ラベル・フィルム", cat:"プラスチック製容器包装", to:["plastic"], how:"ペットボトルのラベル、おにぎりのフィルム、たばこの外装フィルムなど。", kw:["ラベル","ペットボトルのラベル","フィルム","おにぎりのフィルム"] },
+  { name:"果物・野菜のネット", cat:"プラスチック製容器包装", to:["plastic"], how:"みかんや玉ねぎのネット。", kw:["ネット","みかんのネット","玉ねぎのネット"] },
+  { name:"パック・カップ類", cat:"プラスチック製容器包装", to:["plastic"], how:"豆腐パック、卵パック、プリン・ゼリーのカップ、コンビニ弁当の容器、カップ麺の容器。軽くすすいでから。", kw:["豆腐パック","卵パック","たまごパック","プリン容器","ゼリーの容器","ヨーグルト容器","弁当容器","弁当","カップ麺","カップ麺容器","惣菜容器"] },
+  { name:"洗剤・シャンプーのボトル", cat:"プラスチック製容器包装", to:["plastic"], how:"中身を使い切って軽くすすぐ。目薬・洗口液のボトルも。", kw:["洗剤","シャンプー","リンス","ボディソープ","ボトル","目薬","洗口液"] },
+
+  /* かん */
+  { name:"空きかん", cat:"かん", to:["can"], how:"中身を空にしてすすぐ。アルミ缶は地域の集団資源回収にも。", kw:["缶","空き缶","アルミ缶","スチール缶","ジュースの缶","ビールの缶","缶詰","お菓子の缶","粉ミルクの缶"] },
+  { name:"スプレー缶・カセットボンベ", cat:"かん", to:["can"], how:"穴をあけずに、中身を使い切ってから。使い切れないときは日本エアゾール協会（03-5207-9850）／カセットボンベお客様センター（0120-14-9996）へ。", kw:["スプレー","スプレー缶","カセットボンベ","ガスボンベ","ヘアスプレー","殺虫剤","制汗スプレー"] },
+
+  /* びん */
+  { name:"びん", cat:"びん", to:["bottle"], how:"飲み物・食品・調味料のびん。色分けは不要。キャップを外してすすぐ。ビールびん・一升びんはなるべくお店へ。", kw:["空きびん","ジャムのびん","調味料のびん","ビールびん","一升瓶","ワインボトル","栄養ドリンク","ドリンク剤"] },
+  { name:"リチウムイオン電池・モバイルバッテリー", cat:"びんの日（別の指定袋）", to:["bottle"], how:"販売店の回収箱に出せないものは、びんの日に、びんとは別の指定袋に入れて出す。燃やせないごみ・燃やせるごみには絶対に入れない（収集車の火災の原因）。", kw:["リチウムイオン電池","リチウム電池","モバイルバッテリー","バッテリー","充電池","充電式電池","ニカド電池","ニッケル水素電池","エネループ"] },
+  { name:"電池が外せない充電式の製品", cat:"びんの日（別の指定袋）", to:["bottle"], how:"電子タバコやワイヤレスイヤホンなど電池内蔵の製品も、びんの日に別の指定袋で。燃やせないごみには入れない。", kw:["電子タバコ","加熱式たばこ","アイコス","ワイヤレスイヤホン","イヤホン","電動歯ブラシ","電動シェーバー","ハンディファン","携帯扇風機","電池内蔵"] },
+
+  /* ペットボトル */
+  { name:"ペットボトル", cat:"ペットボトル", to:["pet"], how:"リサイクルマーク「1」のものだけ。キャップとラベルを外してプラの日へ。すすいでつぶす。", kw:["PETボトル","飲料ボトル","しょうゆのボトル","みりん"] },
+
+  /* 集積所に出せないもの */
+  { name:"乾電池", cat:"回収ボックスへ", place:"box", how:"袋から出してそのまま回収ボックスへ。各市民センター、市役所新館3階、市立小中学校、北・南消防署にある。", kw:["電池","単三電池","単四電池","単一電池","単3","単4","アルカリ電池","マンガン電池"] },
+  { name:"ボタン電池（SR・PR・LR）", cat:"販売店の回収箱へ", place:"box", how:"型番が SR・PR・LR で始まるボタン電池は、電気店などの回収箱へ。CR・BR のコイン電池は燃やせないごみ。", kw:["ボタン電池","補聴器の電池","時計の電池","LR44","SR"] },
+  { name:"テレビ・洗濯機・エアコン・冷蔵庫", cat:"家電リサイクル4品目", place:"kaden", how:"買い替えなら買う店、処分だけなら買った店に引き取りを頼む。市に頼む場合はごみコールセンター（077-528-2761）へ予約し、郵便局で家電リサイクル券を買う。衣類乾燥機・冷凍庫も対象。", kw:["テレビ","洗濯機","エアコン","冷蔵庫","冷凍庫","衣類乾燥機","液晶テレビ"] },
+  { name:"パソコン", cat:"パソコンの回収", place:"pc", how:"PCリサイクルマークがあればメーカーに回収を申し込む（無料）。リネットジャパンの宅配回収も使える（0570-085-800）。処分前にデータを必ず消す。", kw:["PC","ノートパソコン","デスクトップ","ディスプレイ","モニター"] },
+  { name:"大型ごみ（家具・布団など）", cat:"大型ごみ（有料・申込制）", place:"sodai", how:"指定袋に入らないもの。収集日の1週間前までに申し込み、ごみ処理手数料券を貼って出す。料金は重さで決まる（10kg未満350円、30kg未満700円、60kg未満1,400円、60kg以上2,800円）。", kw:["大型ごみ","粗大ごみ","粗大","ソファ","ソファー","タンス","たんす","ベッド","机","テーブル","本棚","棚","椅子","いす","布団","ふとん","カーペット","じゅうたん","自転車","マットレス"] },
+  { name:"注射針", cat:"市では収集できません", place:"ret", how:"受け取った医療機関や薬局に相談する。", kw:["針","インスリン","在宅医療"] },
+  { name:"灯油・塗料・オートバイ", cat:"市では収集できません", place:"ret", how:"販売店に相談する。", kw:["灯油","ペンキ","塗料","バイク","オートバイ","タイヤ","バッテリー（車）","消火器"] },
+  { name:"石・土", cat:"集積所に出せません", place:"ret", how:"ごみではないため集積所には出せない。", kw:["石","土","砂","砂利"] },
+];
+
+const QUICK = ["電池","お菓子の箱","ライター","歯ブラシ","トレー","スプレー缶","ドライヤー","モバイルバッテリー"];
+
+/* 素材から考えるガイド（品目が見つからないとき用） */
+const MATERIALS = [
+  { id:"paper", name:"紙", rows:[
+    { to:"paper", t:"新聞・雑誌・紙箱・封筒・ダンボール", d:"紙ごみの日に、指定袋に入れずひもで十字にしばって" },
+    { to:"paper", t:"牛乳パック", d:"洗って開いて、紙ごみの日に" },
+    { to:"burn", t:"汚れた紙・ティッシュ・紙コップ・レシート・写真", d:"燃やせるごみ" },
+  ]},
+  { id:"plastic", name:"プラスチック", rows:[
+    { to:"plastic", t:"プラマークのある、きれいな容器・袋・ふた", d:"中身を入れていた入れ物や包み。軽くすすいでプラの日へ" },
+    { to:"burn", t:"汚れの落ちないプラ容器", d:"納豆の容器・チューブなど" },
+    { to:"burn", t:"プラスチックの製品そのもの", d:"歯ブラシ・ハンガー・おもちゃ・CDなど" },
+    { to:"pet", t:"ペットボトル（マーク「1」）", d:"キャップとラベルは外して" },
+  ]},
+  { id:"metal", name:"金属", rows:[
+    { to:"can", t:"飲み物・食べ物の缶、スプレー缶", d:"かんの日。スプレー缶は穴をあけずに使い切って" },
+    { to:"non", t:"それ以外の金属製品", d:"鍋・フライパン・金属ハンガー・アルミホイル・包丁など" },
+  ]},
+  { id:"glass", name:"ガラス・陶器", rows:[
+    { to:"bottle", t:"飲み物・食品のびん", d:"色分けは不要。月1回のびんの日に" },
+    { to:"non", t:"コップ・化粧品のびん・鏡・陶器", d:"燃やせないごみ" },
+    { to:"non", t:"電球・蛍光管", d:"燃やせないごみ" },
+  ]},
+  { id:"cloth", name:"布・革・ゴム", rows:[
+    { to:"burn", t:"衣類・布・まくら", d:"燃やせるごみ（着られる服は集団資源回収へ）" },
+    { to:"burn", t:"靴・かばん", d:"燃やせるごみ" },
+  ]},
+  { id:"battery", name:"電池・電気製品", rows:[
+    { to:"box", t:"乾電池", d:"市民センターなどの回収ボックスへ" },
+    { to:"bottle", t:"リチウムイオン電池・モバイルバッテリー・電池内蔵製品", d:"販売店の回収箱、またはびんの日に別の指定袋で" },
+    { to:"non", t:"コイン電池（CR・BR）", d:"テープで絶縁して燃やせないごみ" },
+    { to:"non", t:"小さな電気製品", d:"電池を外して燃やせないごみ" },
+    { to:"kaden", t:"テレビ・洗濯機・エアコン・冷蔵庫", d:"家電リサイクル" },
+  ]},
+  { id:"big", name:"大きいもの", rows:[
+    { to:"sodai", t:"指定袋に入らない家具・布団など", d:"大型ごみ（有料・申込制）" },
+  ]},
+];
+
+/* 区分から見る（グループ） */
+const GROUPS = [
+  { id:"burn",    short:"燃やせるごみ", title:"燃やせるごみの日に出すもの", alias:["燃やせるごみ","燃やすごみ","もやせるごみ","燃えるごみ","可燃","可燃ごみ"] },
+  { id:"plastic", short:"プラ容器包装", title:"プラの日に出すもの", alias:["プラスチック製容器包装","容器包装","プラ","プラごみ","プラ容器"] },
+  { id:"paper",   short:"紙ごみ",       title:"紙ごみの日に出すもの", alias:["紙ごみ","かみごみ","資源紙","古紙"] },
+  { id:"non",     short:"燃やせないごみ", title:"燃やせないごみの日に出すもの", alias:["燃やせないごみ","燃やせない","燃えないごみ","不燃","不燃ごみ"] },
+  { id:"can",     short:"かん",         title:"かんの日に出すもの", alias:["かんの日","缶の日"] },
+  { id:"pet",     short:"ペットボトル", title:"ペットボトルの日に出すもの", alias:["ペットボトルの日"] },
+  { id:"bottle",  short:"びん・電池",   title:"びんの日に出すもの", alias:["びんの日","空きびん","瓶"] },
+  { id:"out",     short:"出せないもの", title:"ごみ集積所に出せないもの", alias:["出せない","大型","大型ごみ","粗大","粗大ごみ","持ち込み"] },
+];
+
+/* 漢字の品目をひらがなでも探せるように（読み） */
+const YOMI = {
+  "生ごみ":["なまごみ"], "紙くず・汚れた紙":["かみくず"], "紙おむつ":["かみおむつ"], "衣類・布":["いるい","ふく","ようふく","ふるぎ","ぬの","まくら"],
+  "靴・かばん":["くつ","かばん"], "木の枝・板・草":["えだ","き","いた","くさ","おちば"], "使い捨てライター":["らいたー"],
+  "歯ブラシ":["はぶらし"], "プラスチック製品":["おもちゃ","はんがー","ばけつ"], "汚れの落ちないプラ容器":["なっとう"],
+  "食品トレー":["とれー"], "食用油":["あぶら","てんぷらあぶら"], "茶わん・皿・植木鉢":["ちゃわん","さら","うえきばち","とうき"],
+  "ガラス製品":["がらす","こっぷ","かがみ"], "小型家電":["こがたかでん","かでん","とけい","すいはんき"],
+  "フライパン・鍋・やかん":["なべ"], "電球・蛍光管":["でんきゅう","けいこうかん","けいこうとう"], "傘":["かさ"],
+  "包丁・刃物":["ほうちょう","はもの"], "コイン電池（CR・BR）":["こいんでんち"],
+  "新聞・チラシ":["しんぶん","しんぶんし"], "雑誌・雑がみ":["ざっし","ざつがみ","かみぶくろ","ふうとう"],
+  "お菓子の箱・ティッシュの箱":["おかしのはこ","はこ","てぃっしゅのはこ"], "牛乳パック":["ぎゅうにゅうぱっく","かみぱっく"],
+  "空きかん":["あきかん","かん","かんづめ"], "スプレー缶・カセットボンベ":["すぷれーかん"],
+  "リチウムイオン電池・モバイルバッテリー":["りちうむいおんでんち","じゅうでんち","もばいるばってりー"],
+  "電池が外せない充電式の製品":["でんしたばこ"], "乾電池":["でんち","かんでんち","たんさん","たんよん"],
+  "ボタン電池（SR・PR・LR）":["ぼたんでんち"], "テレビ・洗濯機・エアコン・冷蔵庫":["せんたくき","れいぞうこ"],
+  "パソコン":["ぱそこん"], "大型ごみ（家具・布団など）":["おおがたごみ","そだいごみ","かぐ","つくえ","ほんだな","たんす","べっど","ふとん","じてんしゃ"],
+  "注射針":["ちゅうしゃばり"], "灯油・塗料・オートバイ":["とうゆ","ばいく"], "石・土":["いし","つち"],
+};
+
+/* ============================================================
+   日付まわり
+   ============================================================ */
+const DOW = "日月火水木金土";
+const pad = n => String(n).padStart(2,"0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const addDays = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);
+const fmt = d => `${d.getMonth()+1}月${d.getDate()}日(${DOW[d.getDay()]})`;
+const daysBetween = (a,b) => Math.round((startOfDay(b) - startOfDay(a)) / 86400000);
+
+function matchesRule(c, d){
+  if(!c.dow.includes(d.getDay())) return false;
+  if(!c.nth) return true;
+  return c.nth.includes(Math.floor((d.getDate()-1)/7)+1);
+}
+/* その日の収集。{ keys:[...], ex: 例外 or null } */
+function dayInfo(d){
+  return { keys: ORDER.filter(k => matchesRule(COL[k], d)), ex: EXCEPTIONS[ymd(d)] || null };
+}
+/* 実際に出せる区分（例外の日は除く） */
+function activeKeys(d){
+  const i = dayInfo(d);
+  return i.ex ? [] : i.keys;
+}
+function nextDate(key, from){
+  for(let i=0;i<70;i++){
+    const d = addDays(from,i);
+    if(activeKeys(d).includes(key)) return d;
+  }
+  return null;
+}
+function relLabel(d, today){
+  const n = daysBetween(today, d);
+  if(n===0) return "今日";
+  if(n===1) return "明日";
+  if(n===2) return "あさって";
+  return `あと${n}日`;
+}
+const stamp = (k, extra="") => `<span class="stamp ${extra}" data-k="${k}" aria-hidden="true">${COL[k] ? COL[k].mark : PLACES[k] ? PLACES[k].mark : "休"}</span>`;
+
+/* ============================================================
+   いちばん上：今日 / 明日
+   朝8:30までは「今日」、それ以降は「明日」を大きく出す
+   ============================================================ */
+function renderHero(now){
+  const today = startOfDay(now);
+  const tomorrow = addDays(today,1);
+  const beforeCutoff = now.getHours()*60+now.getMinutes() < CUTOFF.h*60+CUTOFF.m;
+  const mainDay = beforeCutoff ? today : tomorrow;
+  const subDay  = beforeCutoff ? tomorrow : today;
+  const mainLabel = beforeCutoff ? "今日" : "明日";
+  const subLabel  = beforeCutoff ? "明日" : "今日";
+
+  const mi = dayInfo(mainDay);
+  const mk = mi.ex ? null : mi.keys[0];
+  let main;
+  if(mk){
+    const c = COL[mk];
+    main = `<div class="hero-main" data-k="${mk}">
+      ${stamp(mk)}
+      <div>
+        <p class="hero-when">${mainLabel} ${fmt(mainDay)}</p>
+        <p class="hero-what">${c.name}</p>
+        <p class="hero-also">${c.also}</p>
+        <p class="hero-note">${beforeCutoff ? "けさ8時30分までに" : "明日の朝5時〜8時30分に"}</p>
+      </div></div>`;
+  } else {
+    const nxt = ORDER.map(k => ({k, d: nextDate(k, addDays(mainDay,1))})).filter(x=>x.d).sort((a,b)=>a.d-b.d)[0];
+    const reason = mi.ex ? mi.ex.note : "収集はありません";
+    main = `<div class="hero-main">
+      ${stamp("none","off")}
+      <div>
+        <p class="hero-when">${mainLabel} ${fmt(mainDay)}</p>
+        <p class="hero-what">${mi.ex && mi.ex.type==="check" ? "収集は要確認" : "ごみ出しはお休み"}</p>
+        <p class="hero-also">${reason}</p>
+        ${nxt ? `<p class="hero-note">次は ${fmt(nxt.d)}：${COL[nxt.k].name}</p>` : ""}
+      </div></div>`;
+  }
+
+  const si = dayInfo(subDay);
+  const sk = si.ex ? null : si.keys[0];
+  let sub;
+  if(sk){
+    const done = !beforeCutoff;
+    sub = `<div class="hero-sub">${stamp(sk)}<span><b>${subLabel}</b> ${fmt(subDay)}　${COL[sk].name}${done ? ' <span class="done">（8時30分で終了）</span>' : ""}</span></div>`;
+  } else {
+    sub = `<div class="hero-sub">${stamp("none","off")}<span><b>${subLabel}</b> ${fmt(subDay)}　${si.ex ? si.ex.note : "収集なし"}</span></div>`;
+  }
+  document.getElementById("hero").innerHTML = main + sub;
+}
+
+/* ============================================================
+   次の収集日（区分ごと、近い順）
+   ============================================================ */
+function renderNext(now){
+  const today = startOfDay(now);
+  const beforeCutoff = now.getHours()*60+now.getMinutes() < CUTOFF.h*60+CUTOFF.m;
+  const from = beforeCutoff ? today : addDays(today,1);
+  const rows = ORDER.map(k => ({k, d: nextDate(k, from)}))
+    .sort((a,b) => (a.d||Infinity) - (b.d||Infinity));
+  const openKeys = new Set([...document.querySelectorAll("#nextList details[open]")].map(e=>e.dataset.k));
+  document.getElementById("nextList").innerHTML = rows.map(({k,d}) => {
+    const c = COL[k];
+    const n = d ? daysBetween(today,d) : null;
+    return `<li><details data-k="${k}" ${openKeys.has(k) ? "open" : ""}>
+      <summary>
+        ${stamp(k)}
+        <span class="name">${c.name}<span class="rule">${c.rule}</span></span>
+        <span class="when">${d ? `<b class="${n<=1 ? "soon" : ""}">${relLabel(d,today)}</b><small>${fmt(d)}</small>` : "<small>日程表を確認</small>"}</span>
+      </summary>
+      <div class="body"><p>${c.examples}</p><p>${c.tip}</p></div>
+    </details></li>`;
+  }).join("");
+}
+
+/* ============================================================
+   検索「これは何ごみ？」
+   ============================================================ */
+function norm(t){
+  return (t||"").normalize("NFKC").toLowerCase()
+    .replace(/[ァ-ヶ]/g, ch => String.fromCharCode(ch.charCodeAt(0)-0x60)) // カタカナ→ひらがな
+    .replace(/[\s・･、。,.()（）「」〜~-]/g,"")
+    .replace(/瓶/g,"びん");
+}
+function bigrams(s){ const b=new Set(); for(let i=0;i<s.length-1;i++) b.add(s.slice(i,i+2)); return b; }
+function dice(a,b){
+  if(a.length<2||b.length<2) return 0;
+  const A=bigrams(a), B=bigrams(b); let n=0;
+  for(const x of A) if(B.has(x)) n++;
+  return 2*n/(A.size+B.size);
+}
+const INDEX = ITEMS.map(it => ({ it, kws: [...new Set([it.name, ...it.kw, ...(YOMI[it.name]||[])].map(norm))].filter(Boolean) }));
+const itemGroup = it => it.place ? "out" : it.to[0];
+const GROUP_ALIAS = new Map();
+GROUPS.forEach(g => g.alias.forEach(a => GROUP_ALIAS.set(norm(a), g.id)));
+const MAT_ALIAS = new Map([
+  ["紙","paper"],["かみ","paper"],["プラスチック","plastic"],["ぷらすちっく","plastic"],["金属","metal"],["きんぞく","metal"],["鉄","metal"],
+  ["ガラス","glass"],["がらす","glass"],["陶器","glass"],["布","cloth"],["ぬの","cloth"],["電気製品","battery"],["電化製品","battery"],
+].map(([a,b]) => [norm(a),b]));
+
+function search(q){
+  const qn = norm(q);
+  if(!qn) return [];
+  const out = [];
+  for(const {it,kws} of INDEX){
+    let s = 0;
+    for(const k of kws){
+      if(k===qn) s = Math.max(s, 1000);
+      else if(k.startsWith(qn)) s = Math.max(s, 700 - (k.length-qn.length));
+      else if(k.includes(qn)) s = Math.max(s, 500 - (k.length-qn.length));
+      else {
+        // 入力の中にキーワードが入っている（例：「じゃがりこの箱」に「箱」）
+        const kanji = /[一-鿿]/.test(k);
+        if(qn.includes(k) && (kanji || (k.length>=2 && (k.length*2>=qn.length || qn.endsWith(k))))) s = Math.max(s, 300 + k.length*10);
+        // 打ちまちがい・言い方のゆれ（例：「ペトボトル」）
+        if(qn.length>=3){ const d = dice(qn,k); if(d>=0.5) s = Math.max(s, Math.round(200 + d*300*Math.sqrt(Math.min(qn.length,k.length)/Math.max(qn.length,k.length)))); }
+      }
+    }
+    if(s>0) out.push({it,s});
+  }
+  out.sort((a,b)=>b.s-a.s);
+  // いちばん近い候補より大きく劣るものは出さない
+  const top = out.length ? out[0].s : 0;
+  return out.filter(x => x.s >= top*0.45).map(x=>x.it);
+}
+
+let sState = { mode:"home" };
+
+function fromDay(now){
+  const today = startOfDay(now);
+  const before = now.getHours()*60+now.getMinutes() < CUTOFF.h*60+CUTOFF.m;
+  return before ? today : addDays(today,1);
+}
+
+function resultCard(it, now){
+  const today = startOfDay(now);
+  if(it.place){
+    const p = PLACES[it.place];
+    return `<article class="res" data-k="${it.place}">
+      <h3>${it.name}</h3>
+      <p class="cat">${it.cat}</p>
+      <p class="day">${stamp(it.place)}<span><b>ごみ集積所には出せません</b></span></p>
+      <p class="how">${p.lead ? p.lead+" " : ""}${it.how}</p>
+      ${p.contact ? `<p class="contact">わからないときは ${CONTACT.name} <a href="tel:${CONTACT.tel.replace(/-/g,"")}">${CONTACT.tel}</a></p>` : ""}
+    </article>`;
+  }
+  const opts = it.to.map(k => ({k, d: nextDate(k, fromDay(now))})).filter(x=>x.d).sort((a,b)=>a.d-b.d);
+  const first = opts[0];
+  return `<article class="res" data-k="${first ? first.k : it.to[0]}">
+    <h3>${it.name}</h3>
+    <p class="cat">${it.cat}</p>
+    ${first ? `<p class="day">${stamp(first.k)}<span><b>次は ${fmt(first.d)}</b>（${relLabel(first.d,today)}）</span><span class="rule">${opts.map(o=>COL[o.k].rule).join(" ／ ")}</span></p>` : ""}
+    <p class="how">${it.how}</p>
+  </article>`;
+}
+
+const chip = (label, attr) => `<button type="button" class="chip" ${attr}>${escapeHTML(label)}</button>`;
+const matChips = () => `<div class="chips wrap">${MATERIALS.map(m => chip(m.name, `data-mat="${m.id}"`)).join("")}</div>`;
+
+function viewHome(now){
+  const counts = {};
+  ITEMS.forEach(it => { const g = itemGroup(it); counts[g] = (counts[g]||0)+1; });
+  return `
+    <div class="chips">${QUICK.map(t => chip(t, `data-q="${escapeHTML(t)}"`)).join("")}</div>
+    <h3 class="sub">出す日から見る</h3>
+    <div class="groups">${GROUPS.map(g => {
+      const k = g.id==="out" ? "box" : g.id;
+      const d = g.id==="out" ? null : nextDate(g.id, fromDay(now));
+      const name = g.short;
+      const meta = g.id==="out" ? "粗大ごみ・家電など" : `次は ${fmt(d)}`;
+      return `<button type="button" class="gbtn" data-group="${g.id}" data-k="${k}">${stamp(k)}<span>${name}<small>${meta}</small></span></button>`;
+    }).join("")}</div>
+    <h3 class="sub">見つからないものは、素材から考える</h3>
+    ${matChips()}`;
+}
+
+function viewGroup(id, now){
+  const g = GROUPS.find(x=>x.id===id);
+  const items = ITEMS.filter(it => itemGroup(it)===id || (id!=="out" && !it.place && it.to.includes(id)));
+  const k = id==="out" ? "box" : id;
+  const d = id==="out" ? null : nextDate(id, fromDay(now));
+  return `
+    <div class="ghead" data-k="${k}">
+      <button type="button" class="back" data-home>‹ もどる</button>
+    </div>
+    <div class="gtitle" data-k="${k}">${stamp(k)}<div><h3>${g.title}</h3>${d ? `<p>${COL[id].rule}　次は ${fmt(d)}（${relLabel(d,startOfDay(now))}）</p>` : `<p>それぞれ出し方がちがいます</p>`}</div></div>
+    ${id!=="out" ? `<p class="gtip">${COL[id].tip}</p>` : ""}
+    <div class="list">${items.map(it => `<button type="button" class="lrow" data-q="${escapeHTML(it.name)}"><span>${it.name}</span>${it.cat!==(COL[id]&&COL[id].name) ? `<small>${it.cat}</small>` : ""}</button>`).join("")}</div>`;
+}
+
+function viewMaterial(id, now){
+  const m = MATERIALS.find(x=>x.id===id);
+  const today = startOfDay(now);
+  return `
+    <div class="ghead"><button type="button" class="back" data-home>‹ もどる</button></div>
+    ${guideCard(m, today, now)}
+    <p class="sub">ほかの素材</p>
+    <div class="chips wrap">${MATERIALS.filter(x=>x.id!==id).map(x => chip(x.name, `data-mat="${x.id}"`)).join("")}</div>`;
+}
+
+function guideCard(m, today, now){
+  return `<div class="guide">
+    <h3>${m.name}でできているもの</h3>
+    ${m.rows.map(r => {
+      const d = COL[r.to] ? nextDate(r.to, fromDay(now)) : null;
+      const where = COL[r.to] ? `${COL[r.to].name}${d ? `・次は ${fmt(d)}` : ""}` : "";
+      return `<div class="g" data-k="${r.to}">${stamp(r.to)}<div><b>${r.t}</b><p>${r.d}</p>${where ? `<small>${where}</small>` : ""}</div></div>`;
+    }).join("")}
+    <p class="contact">それでも迷ったら ${CONTACT.name} <a href="tel:${CONTACT.tel.replace(/-/g,"")}">${CONTACT.tel}</a></p>
+  </div>`;
+}
+
+function viewQuery(q, now){
+  const qn = norm(q);
+  const today = startOfDay(now);
+  const hits = search(q);
+  let html = "";
+  const gid = GROUP_ALIAS.get(qn);
+  const mid = MAT_ALIAS.get(qn);
+  if(mid) html += guideCard(MATERIALS.find(x=>x.id===mid), today, now);
+  if(gid && !hits.some(h => norm(h.name)===qn)){
+    const g = GROUPS.find(x=>x.id===gid);
+    html += `<button type="button" class="lrow strong" data-group="${gid}"><span>${g.title}を一覧で見る</span><small>›</small></button>`;
+  }
+  if(hits.length){
+    html += hits.slice(0,3).map(it => resultCard(it, now)).join("");
+    const rest = hits.slice(3,9);
+    if(rest.length) html += `<p class="sub">ほかの候補</p><div class="chips wrap">${rest.map(it => chip(it.name, `data-q="${escapeHTML(it.name)}"`)).join("")}</div>`;
+  } else if(!mid && !gid){
+    html += `<div class="hint"><p>「${escapeHTML(q)}」は登録がありませんでした。短いことば（「箱」「袋」「電池」など）でも試してみてください。</p><p>何でできているかで、だいたいの出し方がわかります。</p></div>${matChips()}`;
+  }
+  return html;
+}
+
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function runSearch(){
+  const q = document.getElementById("q").value.trim();
+  if(q) sState = { mode:"query", q };
+  else if(sState.mode==="query") sState = { mode:"home" };
+  renderSearch();
+}
+function renderSearch(){
+  const now = new Date();
+  const box = document.getElementById("sBody");
+  const s = sState;
+  box.innerHTML =
+    s.mode==="query" ? viewQuery(s.q, now) :
+    s.mode==="group" ? viewGroup(s.id, now) :
+    s.mode==="mat"   ? viewMaterial(s.id, now) :
+    viewHome(now);
+}
+
+/* ============================================================
+   カレンダー
+   ============================================================ */
+let viewMonth = new Date(); viewMonth.setDate(1);
+let selected = startOfDay(new Date());
+
+function renderCalendar(){
+  const y = viewMonth.getFullYear(), m = viewMonth.getMonth();
+  const today = startOfDay(new Date());
+  document.getElementById("calTitle").textContent = `${y}年${m+1}月`;
+  let html = [...DOW].map((d,i)=>`<div class="dow ${i===0?"sun":i===6?"sat":""}">${d}</div>`).join("");
+  const first = new Date(y,m,1).getDay();
+  const last = new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++) html += `<div class="cell blank" aria-hidden="true"></div>`;
+  for(let day=1; day<=last; day++){
+    const d = new Date(y,m,day);
+    const info = dayInfo(d);
+    const k = info.keys[0];
+    const off = info.ex ? "off" : "";
+    const cls = ["cell"];
+    if(+d===+today) cls.push("today");
+    if(+d===+selected) cls.push("sel");
+    if(d<today) cls.push("past");
+    const label = `${m+1}月${day}日 ${DOW[d.getDay()]}曜日 ${k ? (info.ex ? COL[k].name+"（"+info.ex.note+"）" : COL[k].name) : "収集なし"}`;
+    html += `<button type="button" class="${cls.join(" ")}" data-date="${ymd(d)}" ${k?`data-k="${k}"`:""} aria-label="${label}" ${+d===+today?'aria-current="date"':""}>
+      <span class="d">${day}</span>
+      ${k ? `${stamp(k, off)}<span class="lbl ${off}">${COL[k].cal}</span>` : ""}
+    </button>`;
+  }
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = html;
+  renderDayDetail();
+}
+
+function renderDayDetail(){
+  const box = document.getElementById("dayDetail");
+  const info = dayInfo(selected);
+  const k = info.keys[0];
+  let body;
+  if(info.ex){
+    body = `<div class="row">${k ? stamp(k,"off") : stamp("none","off")}<p><b>${fmt(selected)}</b>　${info.ex.note}</p></div>`;
+  } else if(k){
+    body = `<div class="row">${stamp(k)}<p><b>${fmt(selected)}</b>　${COL[k].name}<br><small>${COL[k].also}</small></p></div>`;
+  } else {
+    body = `<p><b>${fmt(selected)}</b>　収集はありません</p>`;
+  }
+  box.innerHTML = body;
+}
+
+function renderLegend(){
+  document.getElementById("legend").innerHTML = ORDER.map(k=>`<span>${stamp(k)}${COL[k].name}</span>`).join("");
+}
+
+/* ============================================================
+   年度切れのお知らせ
+   ============================================================ */
+function renderNotice(now){
+  const el = document.getElementById("fyNotice");
+  if(ymd(now) > FY_END){
+    el.hidden = false;
+    el.innerHTML = `このアプリの日程は令和8年度（2027年3月まで）のものです。新しい年度の収集カレンダーで曜日が変わっていないか確認してください。`;
+  } else if(now.getMonth()===11 || (now.getMonth()===0 && now.getDate()<=5)){
+    el.hidden = false;
+    el.innerHTML = `12月31日（木）と1月1日（金）は収集がありません。`;
+  } else {
+    el.hidden = true;
+  }
+}
+
+/* ============================================================
+   まとめて描画
+   ============================================================ */
+function renderAll(){
+  const now = new Date();
+  document.getElementById("now").textContent = fmt(now);
+  renderHero(now);
+  renderNotice(now);
+  renderNext(now);
+  renderCalendar();
+  renderSearch();
+}
+
+document.getElementById("q").addEventListener("input", runSearch);
+document.getElementById("q").addEventListener("keydown", e => { if(e.key==="Enter"){ e.target.blur(); } });
+document.getElementById("sBody").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  const q = document.getElementById("q");
+  if(b.dataset.q!==undefined){ q.value = b.dataset.q; runSearch(); }
+  else if(b.dataset.group){ sState = { mode:"group", id:b.dataset.group }; q.value=""; renderSearch(); }
+  else if(b.dataset.mat){ sState = { mode:"mat", id:b.dataset.mat }; q.value=""; renderSearch(); }
+  else if(b.hasAttribute("data-home")){ sState = { mode:"home" }; q.value=""; renderSearch(); }
+  else return;
+  const top = document.getElementById("search").getBoundingClientRect().top;
+  if(top < 0) document.getElementById("search").scrollIntoView();
+});
+
+document.getElementById("prevM").addEventListener("click", () => { viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()-1, 1); renderCalendar(); });
+document.getElementById("nextM").addEventListener("click", () => { viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth()+1, 1); renderCalendar(); });
+document.getElementById("thisM").addEventListener("click", () => { const t=new Date(); viewMonth = new Date(t.getFullYear(), t.getMonth(), 1); selected = startOfDay(t); renderCalendar(); });
+document.getElementById("calGrid").addEventListener("click", e => {
+  const b = e.target.closest(".cell[data-date]"); if(!b) return;
+  const [y,m,d] = b.dataset.date.split("-").map(Number);
+  selected = new Date(y,m-1,d);
+  document.querySelectorAll("#calGrid .cell.sel").forEach(x=>x.classList.remove("sel"));
+  b.classList.add("sel");
+  renderDayDetail();
+});
+
+/* アプリを開いたまま日付・時刻が変わっても表示を更新 */
+let lastDay = ymd(new Date());
+function refresh(){
+  const now = new Date();
+  if(ymd(now) !== lastDay){ lastDay = ymd(now); selected = startOfDay(now); renderAll(); return; }
+  renderHero(now); renderNext(now);
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) refresh(); });
+setInterval(refresh, 60*1000);
+
+renderLegend();
+renderAll();
+
+/* オフラインでも開けるように */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
